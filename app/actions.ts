@@ -87,8 +87,9 @@ export async function deleteSession(formData: FormData) {
 
 export async function refreshLibrary() {
   const { db, user } = await authed("/profile");
-  const { data: profile } = await db.from("profiles").select("steam_id").eq("id", user.id).single();
-  if (profile?.steam_id) await syncSteamLibrary(createAdminSupabase(), user.id, profile.steam_id);
+  const { data: profile } = await db.from("profiles").select("steam_id,library_synced_at").eq("id", user.id).single();
+  const recentlySynced = profile?.library_synced_at && Date.now() - new Date(profile.library_synced_at).getTime() < 5 * 60_000;
+  if (profile?.steam_id && !recentlySynced) await syncSteamLibrary(createAdminSupabase(), user.id, profile.steam_id);
   redirect("/profile");
 }
 

@@ -1,3 +1,5 @@
+-- Historical bootstrap schema. The production project is advanced by the
+-- ordered files in supabase/migrations; do not deploy this file by itself.
 create extension if not exists "pgcrypto";
 create type session_frequency as enum ('weekly', 'biweekly', 'monthly');
 
