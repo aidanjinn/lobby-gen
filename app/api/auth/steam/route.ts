@@ -2,7 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { randomBytes } from "crypto";
 
 export async function GET(request: NextRequest) {
-  const origin = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin;
+  let origin: string;
+  try {
+    origin = new URL(process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin).origin;
+  } catch {
+    return NextResponse.redirect(new URL("/?error=app_url_invalid", request.url));
+  }
   const returnTo = `${origin}/api/auth/steam/callback`;
   const state = randomBytes(24).toString("hex");
   const next = request.nextUrl.searchParams.get("next");

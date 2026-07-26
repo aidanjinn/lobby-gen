@@ -9,7 +9,19 @@ export async function GET(request: NextRequest) {
   try {
     const state = request.nextUrl.searchParams.get("state");
     const configuredOrigin = new URL(process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin).origin;
-    const expectedReturnTo = `${configuredOrigin}/api/auth/steam/callback?state=${state}`;
+    const returnedTo = request.nextUrl.searchParams.get("openid.return_to");
+    let validReturnTo = false;
+    if (returnedTo && state) {
+      try {
+        const returnUrl = new URL(returnedTo);
+        validReturnTo = returnUrl.origin === configuredOrigin
+          && returnUrl.pathname.replace(/\/+$/, "") === "/api/auth/steam/callback"
+          && returnUrl.searchParams.get("state") === state
+          && Array.from(returnUrl.searchParams.keys()).every((key) => key === "state");
+      } catch {
+        validReturnTo = false;
+      }
+    }
     const claimed = request.nextUrl.searchParams.get("openid.claimed_id") || "";
     const identity = request.nextUrl.searchParams.get("openid.identity") || "";
     const steamId = claimed.match(/^https:\/\/steamcommunity\.com\/openid\/id\/(\d{17})$/)?.[1];
@@ -17,7 +29,7 @@ export async function GET(request: NextRequest) {
       request.nextUrl.searchParams.get("openid.ns") !== "http://specs.openid.net/auth/2.0" ||
       request.nextUrl.searchParams.get("openid.mode") !== "id_res" ||
       request.nextUrl.searchParams.get("openid.op_endpoint") !== "https://steamcommunity.com/openid/login" ||
-      request.nextUrl.searchParams.get("openid.return_to") !== expectedReturnTo || identity !== claimed || !steamId) return fail(request, "steam_auth_invalid");
+      !validReturnTo || identity !== claimed || !steamId) return fail(request, "steam_auth_invalid");
 
     const params = new URLSearchParams(request.nextUrl.searchParams); params.delete("state"); params.set("openid.mode", "check_authentication");
     const verificationResponse = await fetch("https://steamcommunity.com/openid/login", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: params, signal: AbortSignal.timeout(8000), cache: "no-store" });
