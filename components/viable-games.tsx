@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { ChevronDown, Gamepad2, SlidersHorizontal } from "lucide-react";
+import Link from "next/link";
 
 type Game = {
   app_id: number;
@@ -11,7 +12,7 @@ type Game = {
   groupPlaytime: number;
 };
 
-export function ViableGames({ games, metadataPending }: { games: Game[]; metadataPending: number }) {
+export function ViableGames({ games, metadataPending, sessionId }: { games: Game[]; metadataPending: number; sessionId: string }) {
   const [genre, setGenre] = useState("All");
   const [sort, setSort] = useState("name");
   const genres = useMemo(
@@ -50,14 +51,15 @@ export function ViableGames({ games, metadataPending }: { games: Game[]; metadat
     {metadataPending > 0 && <p className="muted">Checking {metadataPending} more shared {metadataPending === 1 ? "game" : "games"} with Steam…</p>}
     {!shown.length && metadataPending === 0 && <div className="emptyGames"><Gamepad2 /><p>No shared multiplayer games match this genre.</p></div>}
     <div className="gameGrid">
-      {shown.map((game) => <article className="gameCard" key={game.app_id}>
+      {shown.map((game) => <Link href={`/sessions/${sessionId}/games/${game.app_id}`} className="gameCard" key={game.app_id}>
         <div className="gameImage" style={{ backgroundImage: `url(${game.header_image || ""})` }} />
         <div className="gameInfo">
           <h3>{game.name}</h3>
           <div className="tags">{game.genres.map((value) => <span key={value}>{value}</span>)}</div>
           <p>Owned by everyone · {Math.round(game.groupPlaytime / 60)} group hours</p>
+          <p><b>View member playtime comparison →</b></p>
         </div>
-      </article>)}
+      </Link>)}
     </div>
   </>;
 }

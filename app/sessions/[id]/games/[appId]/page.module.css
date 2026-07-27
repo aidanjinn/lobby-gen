@@ -1,0 +1,158 @@
+.page {
+  min-height: 100vh;
+}
+
+.wrap {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 54px 24px 90px;
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #6f737d;
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 28px;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(220px, 340px) 1fr;
+  gap: 34px;
+  align-items: center;
+  margin-bottom: 34px;
+}
+
+.cover {
+  width: 100%;
+  aspect-ratio: 460 / 215;
+  border-radius: 16px;
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 16px 45px rgba(31, 27, 46, 0.18);
+}
+
+.hero h1 {
+  font-size: clamp(34px, 5vw, 54px);
+  letter-spacing: -2px;
+  margin-bottom: 10px;
+}
+
+.hero p {
+  color: #6f737d;
+  line-height: 1.6;
+}
+
+.summary {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+
+.summary span {
+  background: #f1edff;
+  color: #6042c3;
+  border-radius: 999px;
+  padding: 7px 11px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.chart {
+  background: white;
+  border: 1px solid #e8e9ec;
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 15px 45px rgba(42, 38, 60, 0.06);
+}
+
+.chart h2 {
+  margin-bottom: 7px;
+}
+
+.chartIntro {
+  color: #6f737d;
+  font-size: 14px;
+  margin-bottom: 28px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(120px, 190px) 1fr minmax(75px, auto);
+  align-items: center;
+  gap: 16px;
+  margin: 18px 0;
+}
+
+.person {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #ebe5ff;
+}
+
+.initials {
+  display: grid;
+  place-items: center;
+  color: #6242cb;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.person b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.track {
+  height: 18px;
+  background: #f0f0f3;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.bar {
+  height: 100%;
+  min-width: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #7857e8, #a88df5);
+}
+
+.hours {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+}
+
+@media (max-width: 680px) {
+  .hero {
+    grid-template-columns: 1fr;
+  }
+
+  .row {
+    grid-template-columns: 1fr auto;
+    gap: 9px 12px;
+  }
+
+  .track {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .chart {
+    padding: 22px;
+  }
+}

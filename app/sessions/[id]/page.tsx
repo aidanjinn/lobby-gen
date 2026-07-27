@@ -214,7 +214,7 @@ export default async function Page({
             <p>Multiplayer and co-op games the whole group owns.</p>
           </div>
         </div>
-        <ViableGames games={games} metadataPending={gameMetadataPending} />
+        <ViableGames games={games} metadataPending={gameMetadataPending} sessionId={id} />
         {host && (
           <section className="dangerZone">
             <div>
