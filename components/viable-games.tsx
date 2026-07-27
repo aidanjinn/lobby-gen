@@ -1,4 +1,59 @@
 "use client";
-import{useMemo,useState}from"react";import{ChevronDown,Gamepad2,SlidersHorizontal}from"lucide-react";
-type Game={app_id:number;name:string;header_image:string|null;max_players:number;genres:string[];groupPlaytime:number};
-export function ViableGames({games,partySize}:{games:Game[];partySize:number}){const[genre,setGenre]=useState("All"),[sort,setSort]=useState("name");const genres=useMemo(()=>["All",...Array.from(new Set(games.flatMap(g=>g.genres))).sort()],[games]);const shown=useMemo(()=>games.filter(g=>genre==="All"||g.genres.includes(genre)).sort((a,b)=>sort==="players-desc"?b.max_players-a.max_players:sort==="players-asc"?a.max_players-b.max_players:sort==="playtime"?b.groupPlaytime-a.groupPlaytime:a.name.localeCompare(b.name)),[games,genre,sort]);return <><div className="gameControls"><div><SlidersHorizontal size={16}/><span>{shown.length} viable {shown.length===1?"game":"games"}</span></div><label>Genre<div className="selectWrap"><select value={genre} onChange={e=>setGenre(e.target.value)}>{genres.map(x=><option key={x}>{x}</option>)}</select><ChevronDown size={14}/></div></label><label>Sort by<div className="selectWrap"><select value={sort} onChange={e=>setSort(e.target.value)}><option value="name">Name</option><option value="players-asc">Player capacity: low to high</option><option value="players-desc">Player capacity: high to low</option><option value="playtime">Group playtime</option></select><ChevronDown size={14}/></div></label></div>{!shown.length&&<div className="emptyGames"><Gamepad2/><p>No viable games match this genre.</p></div>}<div className="gameGrid">{shown.map(game=><article className="gameCard" key={game.app_id}><div className="gameImage" style={{backgroundImage:`url(${game.header_image||""})`}}><span><Gamepad2 size={14}/>{game.max_players} players</span></div><div className="gameInfo"><h3>{game.name}</h3><div className="tags">{game.genres.map(x=><span key={x}>{x}</span>)}</div><p>Fits {partySize} players · {Math.round(game.groupPlaytime/60)} group hours</p></div></article>)}</div></>}
+
+import { useMemo, useState } from "react";
+import { ChevronDown, Gamepad2, SlidersHorizontal } from "lucide-react";
+
+type Game = {
+  app_id: number;
+  name: string;
+  header_image: string | null;
+  genres: string[];
+  groupPlaytime: number;
+};
+
+export function ViableGames({ games }: { games: Game[] }) {
+  const [genre, setGenre] = useState("All");
+  const [sort, setSort] = useState("name");
+  const genres = useMemo(
+    () => ["All", ...Array.from(new Set(games.flatMap((game) => game.genres))).sort()],
+    [games],
+  );
+  const shown = useMemo(
+    () => games
+      .filter((game) => genre === "All" || game.genres.includes(genre))
+      .sort((a, b) => sort === "playtime"
+        ? b.groupPlaytime - a.groupPlaytime
+        : a.name.localeCompare(b.name)),
+    [games, genre, sort],
+  );
+
+  return <>
+    <div className="gameControls">
+      <div><SlidersHorizontal size={16} /><span>{shown.length} shared {shown.length === 1 ? "game" : "games"}</span></div>
+      <label>Genre<div className="selectWrap">
+        <select value={genre} onChange={(event) => setGenre(event.target.value)}>
+          {genres.map((value) => <option key={value}>{value}</option>)}
+        </select>
+        <ChevronDown size={14} />
+      </div></label>
+      <label>Sort by<div className="selectWrap">
+        <select value={sort} onChange={(event) => setSort(event.target.value)}>
+          <option value="name">Name</option>
+          <option value="playtime">Group playtime</option>
+        </select>
+        <ChevronDown size={14} />
+      </div></label>
+    </div>
+    {!shown.length && <div className="emptyGames"><Gamepad2 /><p>No shared games match this genre.</p></div>}
+    <div className="gameGrid">
+      {shown.map((game) => <article className="gameCard" key={game.app_id}>
+        <div className="gameImage" style={{ backgroundImage: `url(${game.header_image || ""})` }} />
+        <div className="gameInfo">
+          <h3>{game.name}</h3>
+          <div className="tags">{game.genres.map((value) => <span key={value}>{value}</span>)}</div>
+          <p>Owned by everyone · {Math.round(game.groupPlaytime / 60)} group hours</p>
+        </div>
+      </article>)}
+    </div>
+  </>;
+}
