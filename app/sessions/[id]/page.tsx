@@ -5,8 +5,12 @@ import { WeeklySchedule } from "@/components/weekly-schedule";
 import { ViableGames } from "@/components/viable-games";
 import { CopyCode } from "@/components/copy-code";
 import { DangerSubmit } from "@/components/danger-submit";
+import { SessionAutoRefresh } from "@/components/session-auto-refresh";
 import { deleteSession, kickMember } from "@/app/actions";
+import { getLobbyOwnership } from "@/lib/ownership";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { createAdminSupabase } from "@/lib/supabase/admin";
+import { enrichMissingGenres } from "@/lib/steam-metadata";
 import { findBestTimes } from "@/lib/scheduler";
 export default async function Page({
   params,
@@ -45,17 +49,9 @@ export default async function Page({
     host = s.host_id === user.id;
   let games: any[] = [];
   if (ids.length) {
-    const { data: owned } = await db
-        .from("user_games")
-        .select(
-          "user_id,app_id,playtime_minutes,steam_games(app_id,name,header_image,max_players,metadata)",
-        )
-        .in("user_id", ids),
-      map = new Map<
-        string,
-        { game: any; owners: Set<string>; playtime: number }
-      >();
-    for (const x of owned || []) {
+    const owned = await getLobbyOwnership(db, ids),
+      map = new Map<string, { game: any; owners: Set<string>; playtime: number }>();
+    for (const x of owned) {
       const r: any = x,
         k = String(r.app_id);
       if (!map.has(k))
@@ -64,8 +60,9 @@ export default async function Page({
       entry.owners.add(r.user_id);
       entry.playtime += r.playtime_minutes || 0;
     }
-    games = [...map.values()]
-      .filter((x) => x.owners.size === ids.length && x.game)
+    const shared = [...map.values()].filter((x) => x.owners.size === ids.length && x.game);
+    await enrichMissingGenres(createAdminSupabase(), shared.map((entry) => entry.game));
+    games = shared
       .map((x) => ({
         app_id: x.game.app_id,
         name: x.game.name,
@@ -91,6 +88,7 @@ export default async function Page({
     initial = mine.length ? mine : template || [];
   return (
     <main>
+      <SessionAutoRefresh />
       <Nav dashboard />
       <div className="sessionHero">
         <div className="shell">

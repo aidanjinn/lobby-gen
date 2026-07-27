@@ -23,6 +23,8 @@ export function ViableGames({ games }: { games: Game[] }) {
       .filter((game) => genre === "All" || game.genres.includes(genre))
       .sort((a, b) => sort === "playtime"
         ? b.groupPlaytime - a.groupPlaytime
+        : sort === "genre"
+          ? (a.genres[0] || "Uncategorized").localeCompare(b.genres[0] || "Uncategorized") || a.name.localeCompare(b.name)
         : a.name.localeCompare(b.name)),
     [games, genre, sort],
   );
@@ -39,6 +41,7 @@ export function ViableGames({ games }: { games: Game[] }) {
       <label>Sort by<div className="selectWrap">
         <select value={sort} onChange={(event) => setSort(event.target.value)}>
           <option value="name">Name</option>
+          <option value="genre">Genre</option>
           <option value="playtime">Group playtime</option>
         </select>
         <ChevronDown size={14} />
