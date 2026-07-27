@@ -11,7 +11,7 @@ type Game = {
   groupPlaytime: number;
 };
 
-export function ViableGames({ games }: { games: Game[] }) {
+export function ViableGames({ games, metadataPending }: { games: Game[]; metadataPending: number }) {
   const [genre, setGenre] = useState("All");
   const [sort, setSort] = useState("name");
   const genres = useMemo(
@@ -47,7 +47,8 @@ export function ViableGames({ games }: { games: Game[] }) {
         <ChevronDown size={14} />
       </div></label>
     </div>
-    {!shown.length && <div className="emptyGames"><Gamepad2 /><p>No shared games match this genre.</p></div>}
+    {metadataPending > 0 && <p className="muted">Checking {metadataPending} more shared {metadataPending === 1 ? "game" : "games"} with Steam…</p>}
+    {!shown.length && metadataPending === 0 && <div className="emptyGames"><Gamepad2 /><p>No shared multiplayer games match this genre.</p></div>}
     <div className="gameGrid">
       {shown.map((game) => <article className="gameCard" key={game.app_id}>
         <div className="gameImage" style={{ backgroundImage: `url(${game.header_image || ""})` }} />

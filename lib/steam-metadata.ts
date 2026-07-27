@@ -4,8 +4,8 @@ type CatalogGame = { app_id: number; metadata?: Record<string, unknown> | null }
 
 export async function enrichMissingGenres(admin: SupabaseClient, games: CatalogGame[]) {
   const candidates = games
-    .filter((game) => !Array.isArray(game.metadata?.genres))
-    .slice(0, 4);
+    .filter((game) => !Array.isArray(game.metadata?.genres) || typeof game.metadata?.is_multiplayer !== "boolean")
+    .slice(0, 6);
 
   await Promise.all(candidates.map(async (game) => {
     try {
@@ -20,9 +20,17 @@ export async function enrichMissingGenres(admin: SupabaseClient, games: CatalogG
       const genres = (details.data?.genres || [])
         .map((genre: { description?: string }) => genre.description)
         .filter((genre: unknown): genre is string => typeof genre === "string" && genre.length > 0);
+      const categories: string[] = (details.data?.categories || [])
+        .map((category: { description?: string }) => category.description)
+        .filter((category: unknown): category is string => typeof category === "string" && category.length > 0) as string[];
+      const isMultiplayer = categories.some((category) =>
+        /multi-?player|co-?op|cooperative|pvp/i.test(category),
+      );
       const metadata = {
         ...(game.metadata || {}),
         genres: genres.length ? genres : ["Uncategorized"],
+        categories,
+        is_multiplayer: isMultiplayer,
         genre_synced_at: new Date().toISOString(),
       };
       const { error } = await admin.from("steam_games").update({ metadata }).eq("app_id", game.app_id);

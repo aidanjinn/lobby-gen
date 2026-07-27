@@ -48,6 +48,7 @@ export default async function Page({
     ids = ms.map((m) => m.user_id),
     host = s.host_id === user.id;
   let games: any[] = [];
+  let gameMetadataPending = 0;
   if (ids.length) {
     const owned = await getLobbyOwnership(db, ids),
       map = new Map<string, { game: any; owners: Set<string>; playtime: number }>();
@@ -62,7 +63,9 @@ export default async function Page({
     }
     const shared = [...map.values()].filter((x) => x.owners.size === ids.length && x.game);
     await enrichMissingGenres(createAdminSupabase(), shared.map((entry) => entry.game));
+    gameMetadataPending = shared.filter((entry) => typeof entry.game.metadata?.is_multiplayer !== "boolean").length;
     games = shared
+      .filter((x) => x.game.metadata?.is_multiplayer === true)
       .map((x) => ({
         app_id: x.game.app_id,
         name: x.game.name,
@@ -203,13 +206,15 @@ export default async function Page({
             <p className="sectionKicker">SHARED STEAM GAMES</p>
             <h2>
               {games.length
-                ? `${games.length} games owned by everyone`
-                : "No shared games found yet"}
+                ? `${games.length} multiplayer games owned by everyone`
+                : gameMetadataPending
+                  ? "Checking shared games with Steam"
+                  : "No shared multiplayer games found"}
             </h2>
-            <p>Filter games the whole group owns by genre or playtime.</p>
+            <p>Multiplayer and co-op games the whole group owns.</p>
           </div>
         </div>
-        <ViableGames games={games} />
+        <ViableGames games={games} metadataPending={gameMetadataPending} />
         {host && (
           <section className="dangerZone">
             <div>
